@@ -109,7 +109,7 @@ export function TaskModal({ task, onClose, onUpdate }) {
                 className="col-span-3"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            {/* <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="assignee" className="text-right">
                 Assignee
               </Label>
@@ -130,7 +130,7 @@ export function TaskModal({ task, onClose, onUpdate }) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
           <div className="flex justify-end">
             <Button type="submit">Save changes</Button>

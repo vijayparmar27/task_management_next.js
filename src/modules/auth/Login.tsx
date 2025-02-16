@@ -44,11 +44,10 @@ export function Login() {
   };
 
   useEffect(() => {
-    console.log(`---- status : `, status);
     if (status === "succeeded") {
       dispatch(setIdelStatus());
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/projects");
       }, 50);
     }
   }, [status, dispatch]);

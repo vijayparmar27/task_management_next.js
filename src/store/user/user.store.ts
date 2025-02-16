@@ -22,6 +22,7 @@ const initialState: UserState = {
   status: "idel",
   error: null,
   isDisabledNavbar: false,
+  isLoading: false,
 };
 
 export const registerApi = createAsyncThunk<
@@ -92,6 +93,9 @@ const userSlice = createSlice({
     setIdelStatus(state) {
       state.status = "idel";
     },
+    setLoading(state, action) {
+      state.isLoading = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -127,7 +131,8 @@ const userSlice = createSlice({
         showToast("User", "error", "somthing want wrong !");
       });
     builder
-      .addCase(userApi.fulfilled, (state, action) => {
+      .addCase(userApi.fulfilled, (state, action: any) => {
+        state.userData = { data: action.payload.data.user, message: "" };
         showToast("User", "success", action.payload.message);
       })
       .addCase(userApi.rejected, () => {
@@ -138,6 +143,6 @@ const userSlice = createSlice({
 
 export const selectUserData = (state: IStoreRoot) => state.user;
 
-export const { setIdelStatus } = userSlice.actions;
+export const { setIdelStatus, setLoading } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -4,4 +4,11 @@ export const API_ENDPOINTS = Object.freeze({
     SIGN_UP: "auth/signup",
     USER: "auth/user",
   },
+  PROJECTS: {
+    PROJECTS: "/projects",
+    PROJECT: "/project",
+  },
+  TASKS: {
+    TASKS: "/tasks",
+  },
 });

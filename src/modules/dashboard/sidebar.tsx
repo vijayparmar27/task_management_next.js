@@ -7,13 +7,11 @@ import {
   Settings,
   HelpCircle,
   Menu,
-  Home,
   SquareCheckBig,
 } from "lucide-react";
 
 import Link from "next/link";
 import { useState } from "react";
-import Image from "next/image";
 
 export default function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -47,42 +45,28 @@ export default function Sidebar() {
     <>
       <button
         type="button"
-        className="lg:hidden fixed top-4 left-4 z-[70] p-2 rounded-lg bg-white dark:bg-[#0F0F12] shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-[50] p-2 rounded-lg bg-white dark:bg-[#0F0F12] shadow-md"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       >
         <Menu className="h-5 w-5 text-gray-600 dark:text-gray-300" />
       </button>
       <nav
         className={`
-                fixed inset-y-0 left-0 z-[70] w-64 bg-white dark:bg-[#0F0F12] transform transition-transform duration-200 ease-in-out
+                fixed inset-y-0 left-0 z-[50] w-64 bg-white dark:bg-[#0F0F12] transform transition-transform duration-200 ease-in-out
                 lg:translate-x-0 lg:static lg:w-64 border-r border-gray-200 dark:border-[#1F1F23]
                 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
             `}
       >
         <div className="h-full flex flex-col">
           <Link
-            href="https://kokonutui.com/"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             className="h-16 px-6 flex items-center border-b border-gray-200 dark:border-[#1F1F23]"
           >
             <div className="flex items-center gap-3">
-              <Image
-                src="https://kokonutui.com/logo.svg"
-                alt="Acme"
-                width={32}
-                height={32}
-                className="flex-shrink-0 hidden dark:block"
-              />
-              <Image
-                src="https://kokonutui.com/logo-black.svg"
-                alt="Acme"
-                width={32}
-                height={32}
-                className="flex-shrink-0 block dark:hidden"
-              />
               <span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
-                KokonutUI
+                Task Dev
               </span>
             </div>
           </Link>
@@ -94,9 +78,6 @@ export default function Sidebar() {
                   Overview
                 </div>
                 <div className="space-y-1">
-                  <NavItem href="/dashboard" icon={Home}>
-                    Dashboard
-                  </NavItem>
                   <NavItem href="/projects" icon={Folder}>
                     Projects
                   </NavItem>

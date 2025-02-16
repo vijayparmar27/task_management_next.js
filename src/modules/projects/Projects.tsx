@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Plus, Users } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -12,23 +11,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AddProject from "./_components/AddProject";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import {
+  getProjectsApi,
+  selectProjectsData,
+} from "@/store/projects/project.store";
 
 export default function Projects() {
-  const { theme, setTheme } = useTheme();
   const [search, setSearch] = useState("");
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const dispatch = useDispatch();
+
+  const { projects } = useSelector(selectProjectsData);
+
+  useEffect(() => {
+    dispatch(getProjectsApi());
+  }, []);
 
   return (
     <div className="min-h-screen w-full bg-background p-6 transition-colors">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold text-foreground">Boards</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
-          </Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
@@ -75,7 +81,13 @@ export default function Projects() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="group relative flex h-48 cursor-pointer flex-col items-center justify-center space-y-4 rounded-lg border border-dashed border-border bg-muted/50 p-6 text-center hover:bg-muted">
+          <Card
+            className="group relative flex h-48 cursor-pointer flex-col items-center justify-center space-y-4 rounded-lg border border-dashed border-border bg-muted/50 p-6 text-center hover:bg-muted"
+            onClick={() => {
+              setIsCreateProjectOpen(true);
+            }}
+          >
+            {" "}
             <div className="rounded-full border border-border bg-background p-3">
               <Plus className="h-6 w-6 text-muted-foreground" />
             </div>
@@ -84,13 +96,25 @@ export default function Projects() {
             </h3>
           </Card>
 
-          <Card className="group relative flex h-48 cursor-pointer flex-col justify-between rounded-lg bg-pink-600 p-6 text-white hover:bg-pink-700">
-            <h3 className="text-lg font-semibold">vijay</h3>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span className="text-sm">Personal</span>
-            </div>
-          </Card>
+          {isCreateProjectOpen && (
+            <AddProject
+              isCreateProjectOpen={isCreateProjectOpen}
+              setIsCreateProjectOpen={setIsCreateProjectOpen}
+            />
+          )}
+
+          {projects?.map((project) => (
+            <Card
+              key={project._id}
+              className="group relative flex h-48 cursor-pointer flex-col justify-between rounded-lg bg-pink-600 p-6 text-white hover:bg-pink-700"
+            >
+              <h3 className="text-lg font-semibold">{project?.title}</h3>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="text-sm">Personal</span>
+              </div>
+            </Card>
+          ))}
         </div>
 
         <Button

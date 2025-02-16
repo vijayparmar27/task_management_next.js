@@ -1,5 +1,5 @@
 import React from "react";
-import { ProjectDashboard } from "@/modules/tasks/project-dashboard";
+import { ProjectDashboard } from "@/modules/tasks/Tasks";
 
 const Tasks = () => {
   return <ProjectDashboard projectId={1} />;

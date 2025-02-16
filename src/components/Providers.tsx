@@ -2,15 +2,11 @@
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { store } from "@/store";
-import { useEffect } from "react";
 import { Provider } from "react-redux";
 import { ToastContainer } from "react-toastify";
+import LoadingSpinner from "./LoadingSpinner";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // fetch user data
-  }, []);
-
   return (
     <Provider store={store}>
       <ThemeProvider
@@ -20,6 +16,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <ToastContainer position="top-right" />
+        <LoadingSpinner />
         {children}
       </ThemeProvider>
     </Provider>

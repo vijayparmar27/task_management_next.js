@@ -14,7 +14,6 @@ const Auth = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const token = Cookies.get("token");
-    console.log(`----- pathname : `, pathname);
     if (!token && pathname !== "login") {
       router.push("/login");
     } else {

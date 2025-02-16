@@ -2,9 +2,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, User, GripHorizontal } from "lucide-react";
 import { users } from "@/lib/mock-data";
+import { ITasks } from "@/@types/store.interface";
 
-export function TaskCard({ task, onClick }) {
-  const assignee = users.find((user) => user.id === task.assigneeId);
+export function TaskCard({
+  task,
+  onClick,
+}: {
+  task: ITasks;
+  onClick: () => void;
+}) {
+  // const assignee = users.find((user) => user._id === (task.assignee as string));
 
   const priorityColors = {
     High: "bg-destructive/10 text-destructive hover:bg-destructive/20",
@@ -30,10 +37,10 @@ export function TaskCard({ task, onClick }) {
                 <CalendarIcon className="w-3 h-3 mr-1" />
                 {task.dueDate}
               </div>
-              <div className="flex items-center text-muted-foreground">
+              {/* <div className="flex items-center text-muted-foreground">
                 <User className="w-3 h-3 mr-1" />
                 {assignee?.name}
-              </div>
+              </div> */}
             </div>
           </div>
           <GripHorizontal className="w-5 h-5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing" />

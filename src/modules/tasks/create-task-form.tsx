@@ -1,50 +1,103 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { users } from "@/lib/mock-data"
-import { useToast } from "@/components/ui/use-toast"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { IProjects, Priority } from "@/@types/store.interface";
+import { Status } from "@/@types/globle.interface";
+import { useSelector } from "react-redux";
+import { selectUserData, setLoading } from "@/store/user/user.store";
+import { useDispatch } from "react-redux";
+import {
+  selectTasksData,
+  setIdelStatus,
+  taksApi,
+} from "@/store/tasks/task.store";
+import { useEffect } from "react";
+
+const statusEnum = Object.values(Status).filter(String) as [
+  string,
+  ...string[]
+];
+const priorityEnum = Object.values(Priority).filter(String) as [
+  string,
+  ...string[]
+];
 
 const formSchema = z.object({
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
   description: z.string().optional(),
-  status: z.enum(["To Do", "In Progress", "Done"]),
-  priority: z.enum(["Low", "Medium", "High"]),
+  status: z.enum(statusEnum),
+  priority: z.enum(priorityEnum),
   assigneeId: z.string(),
   dueDate: z.string(),
-})
+});
 
-export function CreateTaskForm({ onSuccess }: { onSuccess: () => void }) {
-  const { toast } = useToast()
+export function CreateTaskForm({
+  onSuccess,
+  project,
+}: {
+  onSuccess: () => void;
+  project: IProjects;
+}) {
+  const { userData } = useSelector(selectUserData);
+  const { status } = useSelector(selectTasksData);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (status === "succeeded") {
+      dispatch(setIdelStatus());
+      dispatch(setLoading(false));
+    }
+  }, [status, dispatch]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      status: "To Do",
-      priority: "Medium",
+      status: Status.To_Do,
+      priority: Priority.LOW,
       assigneeId: "",
       dueDate: new Date().toISOString().split("T")[0],
     },
-  })
+  });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Here you would typically make an API call to create the task
-    console.log(values)
-    toast({
-      title: "Task created",
-      description: "Your new task has been created successfully.",
-    })
-    onSuccess()
+    dispatch(
+      taksApi({
+        status: values.status as Status,
+        title: values.title,
+        description: values.description as string,
+        priority: values.priority as Priority,
+        dueDate: new Date(values.dueDate).toISOString().split("T")[0],
+        ...(project?._id && { projectId: project._id }),
+        ...(values.assigneeId && { assignee: values.assigneeId }),
+      })
+    );
+    dispatch(setLoading(true));
+
+    onSuccess();
   }
 
   return (
@@ -83,16 +136,21 @@ export function CreateTaskForm({ onSuccess }: { onSuccess: () => void }) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="To Do">To Do</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Done">Done</SelectItem>
+                    {Object.values(Status).map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -105,16 +163,21 @@ export function CreateTaskForm({ onSuccess }: { onSuccess: () => void }) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Priority</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
+                    {Object.values(Priority).map((priority: string) => (
+                      <SelectItem key={priority} value={priority}>
+                        {priority}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -129,18 +192,23 @@ export function CreateTaskForm({ onSuccess }: { onSuccess: () => void }) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Assignee</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select assignee" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
+                    {userData?.data.members &&
+                      userData.data.members.length > 0 &&
+                      userData.data.members.map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -164,6 +232,5 @@ export function CreateTaskForm({ onSuccess }: { onSuccess: () => void }) {
         <Button type="submit">Create Task</Button>
       </form>
     </Form>
-  )
+  );
 }
-
