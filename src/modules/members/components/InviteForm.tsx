@@ -4,15 +4,17 @@ import type React from "react";
 
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { sendInvitationApi } from "@/store/user/user.store";
+import { useDispatch } from "react-redux";
 
 export default function InviteForm() {
   const [email, setEmail] = useState("");
 
+  const dispatch = useDispatch();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the invitation
-    console.log("Invite sent to:", email);
-    setEmail("");
+    dispatch(sendInvitationApi({ email }));
   };
 
   return (

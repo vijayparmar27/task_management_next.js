@@ -5,10 +5,11 @@ export interface User {
   data: {
     email: string;
     name: string;
-    members?: {
-      id?: string;
-      role?: Roles;
-      name?: string;
+    members: {
+      _id: string;
+      name: string;
+      email: string;
+      role: Roles;
     }[];
   };
 }

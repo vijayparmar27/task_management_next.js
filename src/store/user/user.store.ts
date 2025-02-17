@@ -1,3 +1,4 @@
+import { IUserApiFormateRes } from "@/@types/apiResponce.interface";
 import { IAxiosError } from "@/@types/globle.interface";
 import { IStoreRoot, User, UserState } from "@/@types/store.interface";
 import showToast from "@/components/ui/Toasters";
@@ -44,12 +45,12 @@ export const registerApi = createAsyncThunk<
   }
 });
 
-export const userApi = createAsyncThunk<User>(
+export const userApi = createAsyncThunk<IUserApiFormateRes>(
   "userApi",
   async (data, { rejectWithValue }) => {
     try {
       const response = await axiosClient.get(API_ENDPOINTS.AUTH.USER);
-      return response.data as User;
+      return response.data as IUserApiFormateRes;
     } catch (error) {
       const errorMessage: string =
         (<IAxiosError>error)?.response?.data?.message ??
@@ -85,6 +86,47 @@ export const loginApi = createAsyncThunk<User, LoginData>(
     }
   }
 );
+
+export const sendInvitationApi = createAsyncThunk<
+  { message: string },
+  { email: string }
+>("sendInvitationApi", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosClient.post(API_ENDPOINTS.AUTH.INVATE, data);
+
+    return response.data as { message: string };
+  } catch (error) {
+    const errorMessage: string =
+      (<IAxiosError>error)?.response?.data?.message ??
+      (<IAxiosError>error).message ??
+      "something want wrong";
+
+    showToast("Error", "error", errorMessage);
+    return rejectWithValue(errorMessage);
+  }
+});
+
+export const acceptInvitationApi = createAsyncThunk<
+  { message: string },
+  { token: string }
+>("acceptInvitationApi", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosClient.post(
+      API_ENDPOINTS.AUTH.ACCEPT_INVATE,
+      data
+    );
+
+    return response.data as { message: string };
+  } catch (error) {
+    const errorMessage: string =
+      (<IAxiosError>error)?.response?.data?.message ??
+      (<IAxiosError>error).message ??
+      "something want wrong";
+
+    showToast("Error", "error", errorMessage);
+    return rejectWithValue(errorMessage);
+  }
+});
 
 const userSlice = createSlice({
   name: "user",
@@ -131,11 +173,49 @@ const userSlice = createSlice({
         showToast("User", "error", "somthing want wrong !");
       });
     builder
-      .addCase(userApi.fulfilled, (state, action: any) => {
-        state.userData = { data: action.payload.data.user, message: "" };
+      .addCase(
+        userApi.fulfilled,
+        (state, action: PayloadAction<IUserApiFormateRes>) => {
+          state.userData = {
+            data: {
+              email: action.payload.data.user.email,
+              name: action.payload.data.user.name,
+              members: action.payload.data.user.members,
+            },
+            message: "",
+          };
+          if (action.payload?.message) {
+            showToast("User", "success", action.payload.message);
+          }
+        }
+      )
+      .addCase(userApi.rejected, () => {
+        showToast("User", "error", "somthing want wrong !");
+      });
+
+    builder
+      .addCase(sendInvitationApi.fulfilled, (state, action: any) => {
+        state.isLoading = false;
         showToast("User", "success", action.payload.message);
       })
-      .addCase(userApi.rejected, () => {
+      .addCase(sendInvitationApi.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(sendInvitationApi.rejected, (state) => {
+        state.isLoading = false;
+        showToast("User", "error", "somthing want wrong !");
+      });
+
+    builder
+      .addCase(acceptInvitationApi.fulfilled, (state, action: any) => {
+        state.isLoading = false;
+        showToast("User", "success", action.payload.message);
+      })
+      .addCase(acceptInvitationApi.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(acceptInvitationApi.rejected, (state) => {
+        state.isLoading = false;
         showToast("User", "error", "somthing want wrong !");
       });
   },

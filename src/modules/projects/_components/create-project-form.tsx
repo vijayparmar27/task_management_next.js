@@ -163,14 +163,14 @@ export function CreateProjectForm({
                       options={
                         userData?.data.members.map((user) => ({
                           label: user.name,
-                          value: user.id.toString(),
+                          value: user._id.toString(),
                         })) ?? []
                       }
                       selected={
                         field.value?.map((member) => ({
                           label:
                             userData?.data.members.find(
-                              (user) => user.id.toString() === member.id
+                              (user) => user._id.toString() === member.id
                             )?.name || "",
                           value: member.id,
                         })) || []

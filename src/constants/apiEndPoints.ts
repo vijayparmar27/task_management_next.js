@@ -3,6 +3,8 @@ export const API_ENDPOINTS = Object.freeze({
     LOGIN: "auth/login",
     SIGN_UP: "auth/signup",
     USER: "auth/user",
+    INVATE: "auth/invite",
+    ACCEPT_INVATE: "auth/accept_invite",
   },
   PROJECTS: {
     PROJECTS: "/projects",

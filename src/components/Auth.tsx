@@ -14,16 +14,13 @@ const Auth = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const token = Cookies.get("token");
-    if (!token && pathname !== "login") {
+    if (!token && pathname !== "/login") {
       router.push("/login");
     } else {
+      dispatch(userApi());
       setIsAuthenticated(true);
     }
   }, [router, pathname]);
-
-  useEffect(() => {
-    dispatch(userApi());
-  }, []);
 
   if (isAuthenticated === null) {
     return null; // Or show a loading spinner
