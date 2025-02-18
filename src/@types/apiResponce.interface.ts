@@ -26,6 +26,7 @@ export interface IProjectsRes {
   status: ProjectStatus;
   dueDate: number;
   members: {
+    id: string;
     _id: string;
     name: string;
     email: string;

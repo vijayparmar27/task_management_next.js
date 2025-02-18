@@ -1,22 +1,19 @@
 import { IProjectsReq } from "@/@types/apiRequest.interface";
 import { IAxiosError } from "@/@types/globle.interface";
-import {
-  IProjects,
-  IProjectsState,
-  IStoreRoot,
-} from "@/@types/store.interface";
+import { IProjectsState, IStoreRoot } from "@/@types/store.interface";
 import showToast from "@/components/ui/Toasters";
 import { API_ENDPOINTS } from "@/constants/apiEndPoints";
 import axiosClient from "@/utils/axios.utils";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { setLoading } from "../user/user.store";
-import { store } from "..";
 import { IProjectsFormateRes } from "@/@types/apiResponce.interface";
 
 export const projectsApi = createAsyncThunk<{ message: string }, IProjectsReq>(
   "projectsApi",
-  async (data, { rejectWithValue }) => {
+  async (data, { rejectWithValue, dispatch }) => {
     try {
+      dispatch(setLoading(true));
+
       const response = await axiosClient.post(
         API_ENDPOINTS.PROJECTS.PROJECTS,
         data
@@ -30,9 +27,36 @@ export const projectsApi = createAsyncThunk<{ message: string }, IProjectsReq>(
 
       showToast("Error", "error", errorMessage);
       return rejectWithValue(errorMessage);
+    } finally {
+      dispatch(setLoading(true));
     }
   }
 );
+
+export const projectUpdatesApi = createAsyncThunk<
+  { message: string },
+  IProjectsReq
+>("projectsApi", async (data, { rejectWithValue, dispatch }) => {
+  try {
+    dispatch(setLoading(true));
+
+    const response = await axiosClient.put(
+      `${API_ENDPOINTS.PROJECTS.PROJECTS}/${data._id}`,
+      data
+    );
+    return response.data as { message: string };
+  } catch (error) {
+    const errorMessage: string =
+      (<IAxiosError>error)?.response?.data?.message ??
+      (<IAxiosError>error).message ??
+      "something want wrong";
+
+    showToast("Error", "error", errorMessage);
+    return rejectWithValue(errorMessage);
+  } finally {
+    dispatch(setLoading(true));
+  }
+});
 
 export const getProjectsApi = createAsyncThunk<IProjectsFormateRes, void>(
   "getProjectsApi",

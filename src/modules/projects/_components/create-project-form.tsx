@@ -28,6 +28,7 @@ import { useDispatch } from "react-redux";
 import {
   getProjectsApi,
   projectsApi,
+  projectUpdatesApi,
   selectProjectsData,
   setIdelStatus,
 } from "@/store/projects/project.store";
@@ -60,7 +61,7 @@ export function CreateProjectForm({
 }) {
   const { status } = useSelector(selectProjectsData);
   const { userData } = useSelector(selectUserData);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
 
   const filtermambers = () => {
     return project?.members
@@ -96,6 +97,19 @@ export function CreateProjectForm({
 
     // TODO: API INTERIGATION FOR UPDATE PROJECT
 
+    if (project) {
+      dispatch(
+        projectUpdatesApi({
+          _id: project._id,
+          title: values.title,
+          description: values?.description ?? "",
+          status: values.status,
+          dueDate: values.dueDate,
+          members: values?.members ?? [],
+        })
+      );
+      return;
+    }
     dispatch(
       projectsApi({
         title: values.title,
