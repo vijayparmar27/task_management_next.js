@@ -35,9 +35,10 @@ import {
 } from "@/store/tasks/task.store";
 import { Status } from "@/@types/globle.interface";
 import { setLoading } from "@/store/user/user.store";
+import type { AppDispatch } from "@/store";
 
 export function ProjectDashboard({ projectId }: { projectId: number }) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { projects } = useSelector(selectProjectsData);
   const { tasks: initialTasks } = useSelector(selectTasksData);
   const [selectedProject, setSelectedProject] = useState<IProjects>();

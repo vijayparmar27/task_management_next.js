@@ -1,3 +1,4 @@
+import { IProjectsRes } from "./apiResponce.interface";
 import { ProjectStatus, Roles, Status } from "./globle.interface";
 
 export interface User {
@@ -41,7 +42,7 @@ export interface IProjects {
 }
 
 export interface IProjectsState {
-  projects: IProjects[] | null;
+  projects: IProjectsRes[] | null;
   status: ApiStatus;
   error: null | string;
 }

@@ -18,17 +18,35 @@ import {
   getProjectsApi,
   selectProjectsData,
 } from "@/store/projects/project.store";
+import type { AppDispatch } from "@/store";
+import { IProjectsRes } from "@/@types/apiResponce.interface";
 
 export default function Projects() {
   const [search, setSearch] = useState("");
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [project, setProject] = useState<IProjectsRes>();
 
   const { projects } = useSelector(selectProjectsData);
 
   useEffect(() => {
     dispatch(getProjectsApi());
   }, []);
+
+  const clickOnProject = (projectId: string) => {
+    const clickProject = projects?.find((project) => project._id === projectId);
+
+    if (clickProject) {
+      setProject(clickProject);
+      setIsCreateProjectOpen(true);
+    }
+  };
+
+  const clickOnCreateNewProject = () => {
+    setProject(undefined);
+    setIsCreateProjectOpen(true);
+  };
 
   return (
     <div className="min-h-screen w-full bg-background p-6 transition-colors">
@@ -83,9 +101,7 @@ export default function Projects() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card
             className="group relative flex h-48 cursor-pointer flex-col items-center justify-center space-y-4 rounded-lg border border-dashed border-border bg-muted/50 p-6 text-center hover:bg-muted"
-            onClick={() => {
-              setIsCreateProjectOpen(true);
-            }}
+            onClick={clickOnCreateNewProject}
           >
             {" "}
             <div className="rounded-full border border-border bg-background p-3">
@@ -100,6 +116,7 @@ export default function Projects() {
             <AddProject
               isCreateProjectOpen={isCreateProjectOpen}
               setIsCreateProjectOpen={setIsCreateProjectOpen}
+              project={project}
             />
           )}
 
@@ -107,6 +124,7 @@ export default function Projects() {
             <Card
               key={project._id}
               className="group relative flex h-48 cursor-pointer flex-col justify-between rounded-lg bg-pink-600 p-6 text-white hover:bg-pink-700"
+              onClick={() => clickOnProject(project._id)}
             >
               <h3 className="text-lg font-semibold">{project?.title}</h3>
               <div className="flex items-center gap-2">

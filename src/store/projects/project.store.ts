@@ -1,3 +1,4 @@
+import { IProjectsReq } from "@/@types/apiRequest.interface";
 import { IAxiosError } from "@/@types/globle.interface";
 import {
   IProjects,
@@ -8,8 +9,11 @@ import showToast from "@/components/ui/Toasters";
 import { API_ENDPOINTS } from "@/constants/apiEndPoints";
 import axiosClient from "@/utils/axios.utils";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { setLoading } from "../user/user.store";
+import { store } from "..";
+import { IProjectsFormateRes } from "@/@types/apiResponce.interface";
 
-export const projectsApi = createAsyncThunk<{ message: string }, IProjects>(
+export const projectsApi = createAsyncThunk<{ message: string }, IProjectsReq>(
   "projectsApi",
   async (data, { rejectWithValue }) => {
     try {
@@ -30,26 +34,26 @@ export const projectsApi = createAsyncThunk<{ message: string }, IProjects>(
   }
 );
 
-export const getProjectsApi = createAsyncThunk<{
-  data: { projects: IProjects[] };
-  message: string;
-}>("getProjectsApi", async (data, { rejectWithValue }) => {
-  try {
-    const response = await axiosClient.get(API_ENDPOINTS.PROJECTS.PROJECTS);
-    return response.data as {
-      data: { projects: IProjects[] };
-      message: string;
-    };
-  } catch (error) {
-    const errorMessage: string =
-      (<IAxiosError>error)?.response?.data?.message ??
-      (<IAxiosError>error).message ??
-      "something want wrong";
+export const getProjectsApi = createAsyncThunk<IProjectsFormateRes, void>(
+  "getProjectsApi",
+  async (data, { rejectWithValue, dispatch }) => {
+    try {
+      dispatch(setLoading(true));
+      const response = await axiosClient.get(API_ENDPOINTS.PROJECTS.PROJECTS);
+      return response.data as IProjectsFormateRes;
+    } catch (error) {
+      const errorMessage: string =
+        (<IAxiosError>error)?.response?.data?.message ??
+        (<IAxiosError>error).message ??
+        "something want wrong";
 
-    showToast("Error", "error", errorMessage);
-    return rejectWithValue(errorMessage);
+      showToast("Error", "error", errorMessage);
+      return rejectWithValue(errorMessage);
+    } finally {
+      dispatch(setLoading(false));
+    }
   }
-});
+);
 
 const initialState: IProjectsState = {
   projects: null,
@@ -88,15 +92,11 @@ const projectsSlice = createSlice({
     builder
       .addCase(
         getProjectsApi.fulfilled,
-        (
-          state,
-          action: PayloadAction<{
-            data: { projects: IProjects[] };
-            message: string;
-          }>
-        ) => {
+        (state, action: PayloadAction<IProjectsFormateRes>) => {
           state.projects = action.payload.data.projects;
-          showToast("projectsApi", "success", action.payload.message);
+          if (action.payload?.message) {
+            showToast("projectsApi", "success", action.payload.message);
+          }
         }
       )
       .addCase(getProjectsApi.rejected, (state, action) => {

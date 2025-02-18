@@ -10,3 +10,5 @@ export const store = configureStore({
     tasks,
   },
 });
+
+export type AppDispatch = typeof store.dispatch;

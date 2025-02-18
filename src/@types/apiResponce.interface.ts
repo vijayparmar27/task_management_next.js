@@ -1,4 +1,4 @@
-import { Roles } from "./globle.interface";
+import { ProjectStatus, Roles } from "./globle.interface";
 
 export interface IUserApi {
   name: string;
@@ -15,5 +15,30 @@ export interface IUserApiFormateRes {
   message?: string;
   data: {
     user: IUserApi;
+  };
+}
+
+export interface IProjectsRes {
+  _id: string;
+  userId: string;
+  title: string;
+  description: string;
+  status: ProjectStatus;
+  dueDate: number;
+  members: {
+    _id: string;
+    name: string;
+    email: string;
+  }[];
+  user: {
+    _id: string;
+    name: string;
+  };
+}
+
+export interface IProjectsFormateRes {
+  message?: string;
+  data: {
+    projects: IProjectsRes[];
   };
 }

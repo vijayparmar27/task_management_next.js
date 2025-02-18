@@ -33,6 +33,8 @@ import {
 } from "@/store/projects/project.store";
 import { useEffect } from "react";
 import { selectUserData } from "@/store/user/user.store";
+import type { AppDispatch } from "@/store";
+import { IProjectsRes } from "@/@types/apiResponce.interface";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
@@ -54,32 +56,53 @@ export function CreateProjectForm({
   project,
 }: {
   onSuccess: () => void;
-  project?: z.infer<typeof formSchema>;
+  project?: IProjectsRes;
 }) {
   const { status } = useSelector(selectProjectsData);
   const { userData } = useSelector(selectUserData);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const filtermambers = () => {
+    return project?.members
+      .map((projectMember) => {
+        for (const member of userData?.data.members ?? []) {
+          if (member._id === projectMember._id) {
+            return {
+              id: member._id,
+              name: member.name,
+              role: member.role,
+            };
+          }
+        }
+      })
+      .filter(Boolean);
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      status: ProjectStatus.CREATED,
-      dueDate: new Date().toISOString().split("T")[0],
-      members: [],
+      title: project?.title ?? "",
+      description: project?.description ?? "",
+      status: project?.status ?? ProjectStatus.CREATED,
+      dueDate: project?.dueDate
+        ? new Date(project.dueDate).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      members: filtermambers(),
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+
+    // TODO: API INTERIGATION FOR UPDATE PROJECT
+
     dispatch(
       projectsApi({
         title: values.title,
         description: values?.description ?? "",
         status: values.status,
-        dueDate: values?.dueDate,
-        members: values.members ?? [],
+        dueDate: values.dueDate,
+        members: values?.members ?? [],
       })
     );
   }
@@ -205,7 +228,9 @@ export function CreateProjectForm({
             </FormItem>
           )}
         />
-        <Button type="submit">Create Project</Button>
+        <Button type="submit">
+          {!project ? `Create Project` : `Save Project`}
+        </Button>
       </form>
     </Form>
   );
