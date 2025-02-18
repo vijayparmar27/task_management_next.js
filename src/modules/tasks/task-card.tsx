@@ -35,7 +35,7 @@ export function TaskCard({
               </Badge>
               <div className="flex items-center text-muted-foreground">
                 <CalendarIcon className="w-3 h-3 mr-1" />
-                {task.dueDate}
+                {new Date(task.dueDate).toISOString().split("T")[0]}
               </div>
               {/* <div className="flex items-center text-muted-foreground">
                 <User className="w-3 h-3 mr-1" />

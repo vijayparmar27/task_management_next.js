@@ -18,8 +18,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { users, activityLog } from "@/lib/mock-data";
+import * as z from "zod";
+import { Status } from "@/@types/globle.interface";
+import { ITasks, Priority } from "@/@types/store.interface";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const statusEnum = Object.values(Status).filter(String) as [
+  string,
+  ...string[]
+];
+const priorityEnum = Object.values(Priority).filter(String) as [
+  string,
+  ...string[]
+];
+
+const formSchema = z.object({
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().optional(),
+  status: z.enum(statusEnum),
+  priority: z.enum(priorityEnum),
+  assigneeId: z.string(),
+  dueDate: z.string(),
+});
 
 export function TaskModal({ task, onClose, onUpdate }) {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      status: Status.To_Do,
+      priority: Priority.LOW,
+      assigneeId: "",
+      dueDate: new Date().toISOString().split("T")[0],
+    },
+  });
+
   const [editedTask, setEditedTask] = useState(task);
 
   const handleChange = (e) => {

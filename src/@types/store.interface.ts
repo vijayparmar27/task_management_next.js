@@ -1,4 +1,4 @@
-import { IProjectsRes } from "./apiResponce.interface";
+import { IProjectsRes, ITaskLogs } from "./apiResponce.interface";
 import { ProjectStatus, Roles, Status } from "./globle.interface";
 
 export interface User {
@@ -70,8 +70,15 @@ export interface ITasksState {
   error: null | string;
 }
 
+export interface ITasksLogsState {
+  logs: ITaskLogs | null;
+  status: ApiStatus;
+  error: null | string;
+}
+
 export interface IStoreRoot {
   user: UserState;
   projects: IProjectsState;
   tasks: ITasksState;
+  logs: ITasksLogsState;
 }

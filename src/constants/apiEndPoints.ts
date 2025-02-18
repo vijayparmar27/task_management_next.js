@@ -13,4 +13,5 @@ export const API_ENDPOINTS = Object.freeze({
   TASKS: {
     TASKS: "/tasks",
   },
+  TASK_LOGS: "activityLogs",
 });

@@ -4,6 +4,7 @@ import showToast from "@/components/ui/Toasters";
 import { API_ENDPOINTS } from "@/constants/apiEndPoints";
 import axiosClient from "@/utils/axios.utils";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { setLoading } from "../user/user.store";
 
 export const taksApi = createAsyncThunk<{ message: string }, ITasks>(
   "taksApi",
@@ -23,16 +24,41 @@ export const taksApi = createAsyncThunk<{ message: string }, ITasks>(
   }
 );
 
+export const taksUpdateApi = createAsyncThunk<{ message: string }, ITasks>(
+  "taksUpdateApi",
+  async (data, { rejectWithValue, dispatch }) => {
+    try {
+      dispatch(setLoading(true));
+
+      const response = await axiosClient.put(
+        `${API_ENDPOINTS.TASKS.TASKS}/${data._id}`,
+        data
+      );
+      return response.data as { message: string };
+    } catch (error) {
+      const errorMessage: string =
+        (<IAxiosError>error)?.response?.data?.message ??
+        (<IAxiosError>error).message ??
+        "something want wrong";
+
+      showToast("Error", "error", errorMessage);
+      return rejectWithValue(errorMessage);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }
+);
+
 export const getTasksApi = createAsyncThunk<
   {
     data: { tasks: ITasks[] };
     message: string;
   },
   { projectId: string }
->("getProjectsApi", async (data, { rejectWithValue }) => {
+>("getTasksApi", async (data, { rejectWithValue }) => {
   try {
     const response = await axiosClient.get(
-      `${API_ENDPOINTS.TASKS.TASKS}/${API_ENDPOINTS.PROJECTS.PROJECT}/${data.projectId}`
+      `${API_ENDPOINTS.TASKS.TASKS}${API_ENDPOINTS.PROJECTS.PROJECT}/${data.projectId}`
     );
     return response.data as {
       data: { tasks: ITasks[] };
@@ -115,7 +141,7 @@ const tasksSlice = createSlice({
           }>
         ) => {
           state.tasks = action.payload.data.tasks;
-          showToast("projectsApi", "success", action.payload.message);
+          showToast("getTasksApi", "success", action.payload.message);
         }
       )
       .addCase(getTasksApi.rejected, (state, action) => {

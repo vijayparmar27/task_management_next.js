@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { TaskModal } from "./task-modal";
 import { TaskCard } from "./task-card";
 import { Plus } from "lucide-react";
 import {
@@ -27,22 +26,23 @@ import {
   getProjectsApi,
   selectProjectsData,
 } from "@/store/projects/project.store";
-import { IProjects, ITasks } from "@/@types/store.interface";
+import { ITasks } from "@/@types/store.interface";
 import {
   getTasksApi,
   selectTasksData,
   updateTaskStatusApi,
 } from "@/store/tasks/task.store";
 import { Status } from "@/@types/globle.interface";
-import { setLoading } from "@/store/user/user.store";
-import type { AppDispatch } from "@/store";
+import { IProjectsRes } from "@/@types/apiResponce.interface";
 
 export function ProjectDashboard({ projectId }: { projectId: number }) {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const { projects } = useSelector(selectProjectsData);
   const { tasks: initialTasks } = useSelector(selectTasksData);
-  const [selectedProject, setSelectedProject] = useState<IProjects>();
+
+  const [selectedProject, setSelectedProject] = useState<IProjectsRes>();
   const [tasks, setTasks] = useState<ITasks[]>([]);
+
   const [filters, setFilters] = useState({
     status: "",
     priority: "",
@@ -59,7 +59,7 @@ export function ProjectDashboard({ projectId }: { projectId: number }) {
 
   // Set initial project and load its tasks
   useEffect(() => {
-    if (projects?.length > 0) {
+    if (projects && projects?.length > 0) {
       const initialProject = projects[0];
       setSelectedProject(initialProject);
 
@@ -71,7 +71,7 @@ export function ProjectDashboard({ projectId }: { projectId: number }) {
         );
       }
     }
-  }, [projects, dispatch]);
+  }, [projects]);
 
   // Update tasks when project changes or new tasks are loaded
   useEffect(() => {
@@ -142,8 +142,6 @@ export function ProjectDashboard({ projectId }: { projectId: number }) {
       // Insert the task at the new position
       filteredTasks.splice(insertIndex, 0, taskToMove);
 
-      console.log(`------ taskToMove : `, taskToMove);
-
       dispatch(
         updateTaskStatusApi({
           taskId: taskToMove._id as string,
@@ -184,7 +182,10 @@ export function ProjectDashboard({ projectId }: { projectId: number }) {
           onValueChange={handleProjectChange}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select project" />
+            <SelectValue
+              placeholder="Select project"
+              defaultValue={selectedProject?.title}
+            />
           </SelectTrigger>
           <SelectContent>
             {projects?.map((project) => (
@@ -281,16 +282,33 @@ export function ProjectDashboard({ projectId }: { projectId: number }) {
       </DragDropContext>
 
       {selectedTask && (
-        <TaskModal
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onUpdate={(updatedTask) => {
-            setTasks(
-              tasks.map((t) => (t._id === updatedTask._id ? updatedTask : t))
-            );
-            setSelectedTask(null);
-          }}
-        />
+        <Dialog
+          open={Boolean(selectedTask)}
+          onOpenChange={() => setSelectedTask(null)}
+        >
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Task</DialogTitle>
+              <DialogDescription>
+                Add a new task to your project
+              </DialogDescription>
+            </DialogHeader>
+            <CreateTaskForm
+              project={selectedProject}
+              onSuccess={() => {
+                setIsCreateTaskOpen(false);
+                setSelectedTask(null);
+              }}
+              task={selectedTask}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

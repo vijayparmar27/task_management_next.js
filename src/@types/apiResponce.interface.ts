@@ -43,3 +43,33 @@ export interface IProjectsFormateRes {
     projects: IProjectsRes[];
   };
 }
+
+interface UserDetails {
+  name: string;
+  email: string;
+}
+
+interface Activity {
+  from: string;
+  to: string;
+  previousStatus: string;
+  status: string;
+  _id: string;
+  fromDetails: UserDetails;
+  toDetails: UserDetails;
+}
+
+export interface ITaskLogs {
+  _id: string;
+  taskId: string;
+  createdAt: string;
+  updatedAt: string;
+  activity: Activity[];
+}
+
+export interface ITaskLogsFormateRes {
+  message?: string;
+  data: {
+    taskLogs: ITaskLogs;
+  };
+}

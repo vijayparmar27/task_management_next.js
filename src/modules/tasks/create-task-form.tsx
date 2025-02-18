@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { IProjects, Priority } from "@/@types/store.interface";
+import { ITasks, Priority } from "@/@types/store.interface";
 import { Status } from "@/@types/globle.interface";
 import { useSelector } from "react-redux";
 import { selectUserData, setLoading } from "@/store/user/user.store";
@@ -30,8 +30,11 @@ import {
   selectTasksData,
   setIdelStatus,
   taksApi,
+  taksUpdateApi,
 } from "@/store/tasks/task.store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { IProjectsRes } from "@/@types/apiResponce.interface";
+import { getTaskLogsApi, logsData } from "@/store/logs/logs.store";
 
 const statusEnum = Object.values(Status).filter(String) as [
   string,
@@ -49,19 +52,24 @@ const formSchema = z.object({
   description: z.string().optional(),
   status: z.enum(statusEnum),
   priority: z.enum(priorityEnum),
-  assigneeId: z.string(),
+  assignee: z.string(),
   dueDate: z.string(),
 });
 
 export function CreateTaskForm({
   onSuccess,
   project,
+  task,
 }: {
   onSuccess: () => void;
-  project: IProjects;
+  project: IProjectsRes;
+  task?: ITasks;
 }) {
+  const [isShowLogs, SetShowLogs] = useState(false);
+
   const { userData } = useSelector(selectUserData);
   const { status } = useSelector(selectTasksData);
+  const { logs } = useSelector(logsData);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -74,16 +82,36 @@ export function CreateTaskForm({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      status: Status.To_Do,
-      priority: Priority.LOW,
-      assigneeId: "",
-      dueDate: new Date().toISOString().split("T")[0],
+      title: task?.title ?? "",
+      description: task?.title ?? "",
+      status: task?.status ?? Status.To_Do,
+      priority: task?.priority ?? Priority.LOW,
+      assignee: task?.assignee ?? "",
+      dueDate: task?.dueDate
+        ? new Date(task.dueDate).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if (task) {
+      dispatch(
+        taksUpdateApi({
+          _id: task._id,
+          status: values.status as Status,
+          title: values.title,
+          description: values.description as string,
+          priority: values.priority as Priority,
+          dueDate: new Date(values.dueDate).toISOString().split("T")[0],
+          ...(project?._id && { projectId: project._id }),
+          ...(values.assignee && { assignee: values.assignee }),
+        })
+      );
+      onSuccess();
+
+      return;
+    }
+
     dispatch(
       taksApi({
         status: values.status as Status,
@@ -92,13 +120,24 @@ export function CreateTaskForm({
         priority: values.priority as Priority,
         dueDate: new Date(values.dueDate).toISOString().split("T")[0],
         ...(project?._id && { projectId: project._id }),
-        ...(values.assigneeId && { assignee: values.assigneeId }),
+        ...(values.assignee && { assignee: values.assignee }),
       })
     );
     dispatch(setLoading(true));
 
     onSuccess();
   }
+
+  const handleShowLogs = () => {
+    if (task?._id) {
+      dispatch(
+        getTaskLogsApi({
+          taskId: task?._id,
+        })
+      );
+      SetShowLogs(true);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -188,7 +227,7 @@ export function CreateTaskForm({
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="assigneeId"
+            name="assignee"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Assignee</FormLabel>
@@ -205,7 +244,7 @@ export function CreateTaskForm({
                     {userData?.data.members &&
                       userData.data.members.length > 0 &&
                       userData.data.members.map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
+                        <SelectItem key={user._id} value={user._id.toString()}>
                           {user.name}
                         </SelectItem>
                       ))}
@@ -229,7 +268,37 @@ export function CreateTaskForm({
             )}
           />
         </div>
-        <Button type="submit">Create Task</Button>
+        <Button type="submit">{!task ? "Create Task" : "Save Task"}</Button>
+
+        {task && (
+          <Button
+            type="button"
+            variant="outline"
+            className="ml-4"
+            onClick={handleShowLogs}
+          >
+            Show Logs
+          </Button>
+        )}
+
+        {isShowLogs && (
+          <div className="mt-4 p-4 border rounded bg-gray-100">
+            <h3 className="font-semibold">Activity Logs</h3>
+            {logs?.activity && logs.activity.length > 0 ? (
+              <ul>
+                {logs?.activity.map((log, index) => (
+                  <li key={index} className="text-sm">
+                    <strong>{log.fromDetails.name}</strong> changed status from{" "}
+                    <strong>{log.previousStatus}</strong> to{" "}
+                    <strong>{log.status}</strong>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No logs available</p>
+            )}
+          </div>
+        )}
       </form>
     </Form>
   );
